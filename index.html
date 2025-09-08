@@ -1,164 +1,600 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Rich Text Link Converter</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 30px auto;
-      padding: 20px;
-      background-color: #f9f9f9;
-    }
-    #editor {
-      border: 1px solid #ccc;
-      background: #fff;
-      min-height: 150px;
-      padding: 10px;
-      margin-bottom: 15px;
-      overflow: auto;
-      white-space: pre-wrap;
-    }
-    button {
-      padding: 8px 15px;
-      font-size: 14px;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
-    pre {
-      background: #fff;
-      border-left: 4px solid #007bff;
-      padding: 10px;
-      white-space: pre-wrap;
-      cursor: pointer;
-    }
-    h2 {
-      margin-top: 30px;
-    }
-  </style>
-</head>
-<body>
-  <h1>🔗 Rich Text to Multi-Format Link Converter</h1>
-  <button onclick="makeLink()">🔗 Make Hyperlink</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Multi-Format Link Converter</title>
 
-  <div id="editor" contenteditable="true" placeholder="Paste here..."></div>
+    <!-- Google Fonts for better typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+    <style>
+      /* CSS Variables for easy theme management */
+      :root {
+        --primary-color: #014D59;
+        --accent-color: #037C8E;
+        --background-gradient-start: #F0EDCC;
+        --background-gradient-end: #E8E2B8;
+        --footer-bg: #02343F;
+        --footer-text: #F0EDCC;
+        --font-family: 'Inter', Helvetica, Arial, sans-serif;
+        --border-radius: 8px;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-family);
+        background: linear-gradient(135deg, var(--background-gradient-start), var(--background-gradient-end));
+        transition: background 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      /* Header & Navigation */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 999;
+        background-color: var(--footer-bg);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(8px);
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem 2rem;
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        gap: 1.5rem;
+        margin: 0;
+        padding: 0;
+      }
+      nav a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 0.75rem 1.2rem;
+        border-radius: var(--border-radius);
+        transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+      }
+      nav a:focus,
+      nav a:hover {
+        background-color: var(--background-gradient-start);
+        color: var(--footer-bg);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        outline: none;
+        transform: translateY(-2px);
+      }
+      /* Main content */
+      main {
+        flex: 1;
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+      /* Header Title */
+      h1 {
+        text-align: center;
+        color: var(--primary-color);
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: 1.2px;
+        margin-bottom: 1rem;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      /* Buttons with styles */
+      .button-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+      button {
+        padding: 12px 24px;
+        font-size: 1rem;
+        background-color: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+      }
+      button:focus,
+      button:hover {
+        background-color: var(--accent-color);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        outline: none;
+      }
+      /* Editable editor area */
+      #editor {
+        border: 2px solid #bbb;
+        background: #fff;
+        min-height: 150px;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        font-family: var(--font-family);
+        font-size: 1rem;
+        line-height: 1.5;
+        overflow-y: auto;
+        position: relative;
+        outline: none;
+        transition: border-color 0.3s, box-shadow 0.3s;
+      }
+      /* Focus style for editor */
+      #editor:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 12px rgba(1, 77, 89, 0.3);
+      }
+      /* Placeholder mimic for contenteditable */
+      #editor.placeholder::before {
+        content: attr(data-placeholder);
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        color: #999;
+        pointer-events: none;
+        font-style: italic;
+        user-select: none;
+      }
+      /* Output section styles */
+      #output {
+        display: none;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+      h2 {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        border-bottom: 2px solid #ccc;
+        padding-bottom: 0.5rem;
+        margin-top: 2rem;
+      }
+      pre {
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        border-left: 4px solid var(--primary-color);
+        padding: 1rem 1.5rem;
+        border-radius: var(--border-radius);
+        white-space: pre-wrap;
+        cursor: pointer;
+        color: #fff;
+        font-family: 'Courier New', monospace;
+        font-size: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+      }
+      pre:hover {
+        background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transform: translateY(-1px);
+      }
+      /* Footer styles */
+      footer {
+        background-color: var(--footer-bg);
+        color: var(--footer-text);
+        padding: 2rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2);
+        margin-top: auto;
+      }
+      /* Footer container for sections */
+      .footer-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        width: 100%;
+        max-width: 1200px;
+        margin-bottom: 1rem;
+      }
+      .footer-section {
+        min-width: 200px;
+        margin: 1rem;
+        flex: 1 1 200px;
+        text-align: center;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+      .footer-section:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+      .footer-section h3 {
+        margin-bottom: 0.75rem;
+        font-size: 1.2rem;
+        font-weight: 700;
+        border-bottom: 3px solid #F0EDCC;
+        padding-bottom: 0.5rem;
+        letter-spacing: 1px;
+      }
+      a {
+        color: var(--footer-text);
+        text-decoration: underline;
+      }
+      @media(max-width: 768px) {
+        nav {
+          flex-direction: column;
+        }
+        .footer-container {
+          flex-direction: column;
+          align-items: center;
+        }
+      }
+      /* Status message area */
+      #statusMessage {
+        text-align: center;
+        margin-top: 1rem;
+        font-weight: 600;
+        color: green;
+        min-height: 1.5rem;
+      }
+      /* Customize primary color as needed */
+      :root {
+        --primary-color: #02343F;
+        --hover-shadow: rgba(0, 0, 0, 0.12);
+      }
+      /* Navbar styles */
+      .custom-navbar {
+        position: relative;
+        top: 0;
+        width: 100%;
+        background-color: var(--primary-color);
+        padding: 1rem 2rem;
+        z-index: 999;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(8px);
+        transition: all 0.3s ease;
+      }
+      .custom-navbar ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        list-style: none;
+      }
+      .custom-navbar li {
+        margin: 0 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .custom-navbar li:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px var(--hover-shadow);
+      }
+      .custom-navbar a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 0.75rem 1.2rem;
+        border-radius: 8px;
+        transition: background-color 0.3s, color 0.3s, box-shadow 0.3s, transform 0.2s;
+        display: inline-block;
+      }
+      .custom-navbar a:hover,
+      .custom-navbar a:focus {
+        background-color: var(--background-color, #F0EDCC);
+        color: var(--primary-color);
+        box-shadow: 0 4px 8px var(--hover-shadow);
+        transform: translateY(-2px);
+        outline: none;
+      }
+      /* Responsive styles for small screens */
+      @media (max-width: 600px) {
+        .custom-navbar {
+          padding: 0.75rem 1rem;
+        }
+        .custom-navbar ul {
+          flex-direction: column;
+        }
+        .custom-navbar li {
+          margin: 0.5rem 0;
+        }
+        .custom-navbar a {
+          padding: 0.75rem 1rem;
+        }
+      }
+      #embedded-site {
+        margin-left: 10rem;
+        margin-right: 10rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
 
-  <div id="output" style="display:none;">
-    <h2>1. HTML</h2>
-    <pre id="html" onclick="copyCode(this)">Click to copy</pre>
+    <!-- Navigation Bar Component -->
+    <nav role="navigation" aria-label="Main Navigation" class="custom-navbar">
+      <ul>
+        <li><a href="#hero" aria-label="Home section">Home</a></li>
+        <li><a href="#seo-tools" aria-label="SEO Tools section">SEO Tools</a></li>
+        <li><a href="#resource-tools" aria-label="Coding Resources section">Resource</a></li>
+        <li><a href="#contact" aria-label="Contact section">Contact</a></li>
+      </ul>
+    </nav>
 
-    <h2>2. Markdown</h2>
-    <pre id="markdown" onclick="copyCode(this)">Click to copy</pre>
+    <!-- Semantic header with navigation -->
+    <header>
+      <nav aria-label="Main Navigation">
+        <ul>
+          <li><a href="#editor-section">Editor</a></li>
+          <li><a href="#output-section">Output</a></li>
+        </ul>
+      </nav>
+    </header>
 
-    <h2>3. BBCode</h2>
-    <pre id="bbcode" onclick="copyCode(this)">Click to copy</pre>
+    <!-- Embedded website iframe -->
+    <section id="embedded-site" style="margin-top: 2rem;">
+      <iframe src="https://html-online.com/" width="100%" height="400" style="border:none; border-radius: var(--border-radius);"></iframe>
+    </section>
+    <main>
 
-    <h2>4. Raw Text</h2>
-    <pre id="raw" onclick="copyCode(this)">Click to copy</pre>
+      <!-- Page Title -->
+      <h1 id="editor-section">Multi-Format Link Converter</h1>
 
-    <h2>5. Reference Markdown Style</h2>
-    <pre id="refmd" onclick="copyCode(this)">Click to copy</pre>
-  </div>
+      <!-- Button group for actions -->
+      <div class="button-group" role="toolbar" aria-label="Actions">
+        <button id="makeLinkBtn" aria-label="Make Hyperlink">🔗 Make Hyperlink</button>
+        <button id="clearBtn" aria-label="Clear Editor">Clear</button>
+      </div>
 
-  <script>
-    const editor = document.getElementById("editor");
-    const htmlOut = document.getElementById("html");
-    const bbcodeOut = document.getElementById("bbcode");
-    const markdownOut = document.getElementById("markdown");
-    const rawOut = document.getElementById("raw");
-    const refmdOut = document.getElementById("refmd");
-    const output = document.getElementById("output");
+      <!-- Editable area with custom placeholder -->
+      <section id="editor-section">
+        <div id="editor" contenteditable="true" aria-label="Rich Text Editor" data-placeholder="Paste here..."></div>
+      </section>
 
-    function decodeHTML(str) {
-      const txt = document.createElement("textarea");
-      txt.innerHTML = str;
-      return txt.value;
-    }
+      <!-- Status message -->
+      <div id="statusMessage"></div>
 
-    function convertContent() {
-      let content = editor.innerHTML;
+      <!-- Output area -->
+      <section id="output-section" aria-labelledby="output-label">
+        <h2 id="output-label">Converted Formats</h2>
+        <div id="output">
+          <div>
+            <h3>HTML</h3>
+            <pre id="html" role="textbox" aria-label="HTML Output" tabindex="0">Click to copy</pre>
+          </div>
+          <div>
+            <h3>Markdown</h3>
+            <pre id="markdown" role="textbox" aria-label="Markdown Output" tabindex="0">Click to copy</pre>
+          </div>
+          <div>
+            <h3>BBCode</h3>
+            <pre id="bbcode" role="textbox" aria-label="BBCode Output" tabindex="0">Click to copy</pre>
+          </div>
+          <div>
+            <h3>Raw Text</h3>
+            <pre id="raw" role="textbox" aria-label="Raw Text Output" tabindex="0">Click to copy</pre>
+          </div>
+          <div>
+            <h3>Reference Markdown</h3>
+            <pre id="refmd" role="textbox" aria-label="Reference Markdown Output" tabindex="0">Click to copy</pre>
+          </div>
+        </div>
+      </section>
+    </main>
 
-      // Clean <p> tags and keep line breaks
-      content = content.replace(/<p>/gi, "").replace(/<\/p>/gi, "\n");
-
-      const anchorRegex = /<a\s+href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi;
-      let refCounter = 1;
-      let refList = "";
-
-      // HTML (just decode)
-      const htmlVersion = decodeHTML(content);
-
-      // Markdown
-      const markdownVersion = content.replace(anchorRegex, (_, href, text) =>
-        `[${decodeHTML(text)}](${decodeHTML(href)})`
-      );
-
-      // BBCode
-      const bbcodeVersion = content.replace(anchorRegex, (_, href, text) =>
-        `[url=${decodeHTML(href)}]${decodeHTML(text)}[/url]`
-      );
-
-      // Raw Text
-      const rawVersion = content.replace(anchorRegex, (_, href, text) =>
-        `[${decodeHTML(href)} ${decodeHTML(text)}]`
-      );
-
-      // Reference Markdown
-      const refMarkdownVersion = content.replace(anchorRegex, (_, href, text) => {
-        const label = refCounter++;
-        refList += `[${label}]: ${decodeHTML(href)}\n`;
-        return `[${decodeHTML(text)}][${label}]`;
-      });
-
-      // Inject results
-      htmlOut.textContent = htmlVersion;
-      markdownOut.textContent = decodeHTML(markdownVersion);
-      bbcodeOut.textContent = decodeHTML(bbcodeVersion);
-      rawOut.textContent = decodeHTML(rawVersion);
-      refmdOut.textContent = decodeHTML(refMarkdownVersion + "\n\n" + refList.trim());
-
-      output.style.display = "block";
-    }
-
-    function makeLink() {
-      const url = prompt("Enter the URL for the hyperlink:");
-      if (!url) return;
-
-      const selection = window.getSelection();
-      if (selection.rangeCount === 0) return;
-
-      const range = selection.getRangeAt(0);
-      const selectedText = selection.toString();
-      const anchor = document.createElement("a");
-      anchor.setAttribute("href", url);
-      anchor.textContent = selectedText;
-
-      range.deleteContents();
-      range.insertNode(anchor);
-      convertContent();
-    }
-
-    function copyCode(el) {
-      const text = el.textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        const original = el.textContent;
-        el.textContent = "✅ Copied!";
-        setTimeout(() => el.textContent = original, 1000);
-      });
-    }
-
-    editor.addEventListener("input", convertContent);
-    editor.addEventListener("paste", () => {
-      setTimeout(() => {
-        editor.innerHTML = editor.innerHTML.replace(/<p>/gi, "").replace(/<\/p>/gi, "\n");
-        convertContent();
-      }, 100);
-    });
-  </script>
-</body>
+    <!-- Footer with contact info -->
+    <footer>
+      <div class="footer-container" role="contentinfo">
+        <div class="footer-section">
+          <h3>Contact</h3>
+          <p>Email: <a href="mailto:shakeeb.sa.ahmed@gmail.com" aria-label="Email Shakeeb">shakeeb.sa.ahmed@gmail.com</a></p>
+          <p>GitHub: <a href="https://github.com/shakeeb-sa/" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profile">https://github.com/shakeeb-sa/</a></p>
+          <p>LinkedIn: <a href="https://pk.linkedin.com/in/shakeeb-ahmed-034093370" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile">https://pk.linkedin.com/in/shakeeb-ahmed-034093370</a></p>
+        </div>
+      </div>
+      <p style="margin-top:1rem;">Created by Shakeeb Ahmed</p>
+    </footer>
+    <script>
+      (function() {
+        // Cache DOM elements
+        const editor = document.getElementById('editor');
+        const htmlOutput = document.getElementById('html');
+        const markdownOutput = document.getElementById('markdown');
+        const bbcodeOutput = document.getElementById('bbcode');
+        const rawOutput = document.getElementById('raw');
+        const refmdOutput = document.getElementById('refmd');
+        const outputSection = document.getElementById('output');
+        const statusMessage = document.getElementById('statusMessage');
+        const btnMakeLink = document.getElementById('makeLinkBtn');
+        const btnClear = document.getElementById('clearBtn');
+        // Utility: decode HTML entities
+        function decodeHTML(str) {
+          const txt = document.createElement('textarea');
+          txt.innerHTML = str;
+          return txt.value;
+        }
+        // Show temporary status message
+        function showStatus(msg, isError = false) {
+          statusMessage.textContent = msg;
+          statusMessage.style.color = isError ? 'red' : 'green';
+          setTimeout(() => {
+            statusMessage.textContent = '';
+          }, 3000);
+        }
+        // Handle placeholder in contenteditable
+        function setPlaceholder() {
+          if (editor.innerText.trim() === '') {
+            editor.classList.add('placeholder');
+            editor.setAttribute('data-placeholder', 'Paste here...');
+          } else {
+            editor.classList.remove('placeholder');
+          }
+        }
+        // Initialize placeholder
+        function initPlaceholder() {
+          setPlaceholder();
+          // Add CSS for placeholder
+          const style = document.createElement('style');
+          style.innerHTML = `
+      #editor.placeholder::before {
+        content: attr(data-placeholder);
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        color: #999;
+        pointer-events: none;
+        font-style: italic;
+        user-select: none;
+      }
+      #editor {
+        position: relative;
+      }
+    `;
+          document.head.appendChild(style);
+        }
+        // Convert content to different formats
+        function convertContent() {
+          let content = editor.innerHTML;
+          // Remove all <div> tags and their content
+          content = content.replace(/<div[^>]*>.*?<\/div>/gi, '');
+          // Remove target="_blank" attributes from all tags
+          content = content.replace(/\s*target=["']?_blank["']?/gi, '');
+          // Remove style attributes
+          content = content.replace(/\s*style=["'][^"']*["']/gi, '');
+          // Remove all <br> tags
+          content = content.replace(/<br\s*\/?>/gi, '');
+          // Remove all tags except <a> and </a>
+          content = content.replace(/<(?!a\s|\/a)[^>]+>/gi, '');
+          // Replace <p> tags with newlines
+          content = content.replace(/<p>/gi, '').replace(/<\/p>/gi, '\n');
+          const anchorRegex = /<a\s+href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi;
+          let refCounter = 1;
+          let refList = '';
+          // Decode HTML entities
+          const decodeHTML = (html) => {
+            const txt = document.createElement('textarea');
+            txt.innerHTML = html;
+            return txt.value;
+          };
+          // HTML output (decoded)
+          const htmlVersion = decodeHTML(content);
+          // Markdown
+          const markdownVersion = content.replace(anchorRegex, (_, href, text) =>
+            `[${decodeHTML(text)}](${decodeHTML(href)})`
+          );
+          // BBCode
+          const bbcodeVersion = content.replace(anchorRegex, (_, href, text) =>
+            `[url=${decodeHTML(href)}]${decodeHTML(text)}[/url]`
+          );
+          // Raw Text
+          const rawVersion = content.replace(anchorRegex, (_, href, text) =>
+            `[${decodeHTML(href)} ${decodeHTML(text)}]`
+          );
+          // Reference Markdown with reference list
+          const refMarkdownVersion = content.replace(anchorRegex, (_, href, text) => {
+            const label = refCounter++;
+            refList += `[${label}]: ${decodeHTML(href)}\n`;
+            return `[${decodeHTML(text)}][${label}]`;
+          });
+          // Output the results
+          htmlOutput.textContent = htmlVersion;
+          markdownOutput.textContent = decodeHTML(markdownVersion);
+          bbcodeOutput.textContent = decodeHTML(bbcodeVersion);
+          rawOutput.textContent = decodeHTML(rawVersion);
+          refmdOutput.textContent = decodeHTML(refMarkdownVersion + "\n\n" + refList.trim());
+          outputSection.style.display = 'block';
+        }
+        // Make hyperlink
+        function makeLink() {
+          const url = prompt("Enter the URL for the hyperlink:");
+          if (!url) return;
+          const selection = window.getSelection();
+          if (selection.rangeCount === 0) {
+            showStatus('Please select text to hyperlink.', true);
+            return;
+          }
+          const range = selection.getRangeAt(0);
+          const selectedText = selection.toString();
+          // Create anchor
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.textContent = selectedText;
+          // Replace selection
+          range.deleteContents();
+          range.insertNode(anchor);
+          // Re-render
+          convertContent();
+          showStatus('Hyperlink added.');
+        }
+        // Copy code to clipboard with fallback
+        function copyCode(element) {
+          const text = element.textContent;
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+              showStatus('Copied to clipboard.');
+            }).catch(() => {
+              fallbackCopy(text);
+            });
+          } else {
+            fallbackCopy(text);
+          }
+          function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+              document.execCommand('copy');
+              showStatus('Copied to clipboard.');
+            } catch (err) {
+              showStatus('Copy failed.', true);
+            }
+            document.body.removeChild(textarea);
+          }
+        }
+        // Clear editor
+        function clearEditor() {
+          editor.innerHTML = '';
+          setPlaceholder();
+          outputSection.style.display = 'none';
+          showStatus('Editor cleared.');
+        }
+        // Event handlers
+        // Initialize placeholder on load
+        initPlaceholder();
+        // Handle input in editor
+        editor.addEventListener('input', () => {
+          setPlaceholder();
+          convertContent();
+        });
+        // Handle paste
+        editor.addEventListener('paste', () => {
+          setTimeout(() => {
+            // Remove <p> tags
+            editor.innerHTML = editor.innerHTML.replace(/<p>/gi, '').replace(/<\/p>/gi, '\n');
+            setPlaceholder();
+            convertContent();
+          }, 50);
+        });
+        // Make Hyperlink button
+        document.getElementById('makeLinkBtn').addEventListener('click', () => {
+          makeLink();
+        });
+        // Clear button
+        document.getElementById('clearBtn').addEventListener('click', () => {
+          clearEditor();
+        });
+        // Copy output on click
+        document.querySelectorAll('#output pre').forEach(pre => {
+          pre.setAttribute('tabindex', '0');
+          pre.setAttribute('role', 'textbox');
+          pre.setAttribute('aria-label', pre.nextElementSibling.textContent);
+          pre.addEventListener('click', () => {
+            copyCode(pre);
+          });
+        });
+      })();
+    </script>
+  </body>
 </html>
+
